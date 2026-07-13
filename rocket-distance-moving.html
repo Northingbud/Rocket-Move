@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rocket Distance Moving Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d0d0d;
+      color: #f0ece2;
+      font-family: 'Syne', sans-serif;
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 32px 16px 64px;
+    }
+
+    header { margin-bottom: 36px; }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      color: #f0ece2;
+    }
+
+    header h1 span { color: #e63232; }
+
+    header p {
+      margin-top: 6px;
+      font-size: 0.8rem;
+      color: #666;
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .section {
+      background: #161616;
+      border: 1px solid #252525;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 18px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #888;
+      border-bottom: 1px solid #252525;
+    }
+
+    .section-body {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 0.7rem;
+      font-family: 'DM Mono', monospace;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      background: #0d0d0d;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+
+    .input-wrap:focus-within { border-color: #e63232; }
+
+    .prefix {
+      padding: 0 10px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      color: #444;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      flex-shrink: 0;
+      border-right: 1px solid #2a2a2a;
+    }
+
+    input[type="number"] {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #f0ece2;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.9rem;
+      padding: 0 12px;
+      height: 38px;
+      width: 100%;
+      min-width: 0;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type="number"]::placeholder { color: #333; }
+
+    .subtotal {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: #555;
+      text-align: right;
+      padding-top: 2px;
+      display: none;
+    }
+
+    .subtotal span { color: #888; }
+
+    .section-divider {
+      height: 1px;
+      background: #252525;
+      margin: 2px 0;
+    }
+
+    .summary {
+      background: #c8f53a;
+      border-radius: 12px;
+      padding: 20px 20px 22px;
+      margin-top: 20px;
+      color: #0d0d0d;
+    }
+
+    .summary-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #5a6e00;
+      margin-bottom: 16px;
+    }
+
+    .breakdown {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      font-family: 'DM Mono', monospace;
+      color: #3a4a00;
+    }
+
+    .divider {
+      height: 1px;
+      background: rgba(0,0,0,0.15);
+      margin: 12px 0;
+    }
+
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .total-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #3a4a00;
+    }
+
+    .total-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #0d0d0d;
+    }
+
+    .estimate-section {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(0,0,0,0.15);
+    }
+
+    .estimate-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .estimate-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #3a4a00;
+    }
+
+    .estimate-value {
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #0d0d0d;
+    }
+
+    .estimate-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: #5a6e00;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .empty-summary {
+      text-align: center;
+      padding: 28px 0 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: #444;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Rocket <span>Distance</span> Moving</h1>
+      <p>Distance Moving Calculator</p>
+    </header>
+
+    <!-- Fuel -->
+    <div class="section">
+      <div class="section-header"><span>⛽</span><span>Fuel</span></div>
+      <div class="section-body">
+        <div class="row">
+          <div class="field">
+            <label>Miles</label>
+            <div class="input-wrap"><input type="number" id="miles" placeholder="0" oninput="calc()" /></div>
+          </div>
+          <div class="field">
+            <label>MPG</label>
+            <div class="input-wrap"><input type="number" id="mpg" placeholder="0" oninput="calc()" /></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Gas Price / Gallon</label>
+          <div class="input-wrap"><span class="prefix">$</span><input type="number" id="gasPrice" placeholder="0.00" oninput="calc()" /></div>
+        </div>
+        <div class="subtotal" id="fuelSub">Fuel cost: <span id="fuelVal"></span></div>
+      </div>
+    </div>
+
+    <!-- Hotel -->
+    <div class="section">
+      <div class="section-header"><span>🏨</span><span>Hotel</span></div>
+      <div class="section-body">
+        <div class="row-3">
+          <div class="field">
+            <label>Nights</label>
+            <div class="input-wrap"><input type="number" id="hotelNights" placeholder="0" oninput="calc()" /></div>
+          </div>
+          <div class="field">
+            <label>Rate / Night</label>
+            <div class="input-wrap"><span class="prefix">$</span><input type="number" id="hotelRate" placeholder="0.00" oninput="calc()" /></div>
+          </div>
+          <div class="field">
+            <label>People</label>
+            <div class="input-wrap"><input type="number" id="hotelPeople" placeholder="1" oninput="calc()" /></div>
+          </div>
+        </div>
+        <div class="subtotal" id="hotelSub">Hotel cost: <span id="hotelVal"></span></div>
+      </div>
+    </div>
+
+    <!-- Flights -->
+    <div class="section">
+      <div class="section-header"><span>✈️</span><span>Flights</span></div>
+      <div class="section-body">
+        <div class="row">
+          <div class="field">
+            <label>Cost / Person</label>
+            <div class="input-wrap"><span class="prefix">$</span><input type="number" id="flightCost" placeholder="0.00" oninput="calc()" /></div>
+          </div>
+          <div class="field">
+            <label>People</label>
+            <div class="input-wrap"><input type="number" id="flightPeople" placeholder="1" oninput="calc()" /></div>
+          </div>
+        </div>
+        <div class="subtotal" id="flightSub">Flight cost: <span id="flightVal"></span></div>
+      </div>
+    </div>
+
+    <!-- Vehicle Rental -->
+    <div class="section">
+      <div class="section-header"><span>🚗</span><span>Vehicle Rental</span></div>
+      <div class="section-body">
+        <div class="row">
+          <div class="field">
+            <label>Days</label>
+            <div class="input-wrap"><input type="number" id="rentalDays" placeholder="0" oninput="calc()" /></div>
+          </div>
+          <div class="field">
+            <label>Rate / Day</label>
+            <div class="input-wrap"><span class="prefix">$</span><input type="number" id="rentalRate" placeholder="0.00" oninput="calc()" /></div>
+          </div>
+        </div>
+        <div class="section-divider"></div>
+        <div class="row">
+          <div class="field">
+            <label>Miles Driven</label>
+            <div class="input-wrap"><input type="number" id="rentalMiles" placeholder="0" oninput="calc()" /></div>
+          </div>
+          <div class="field">
+            <label>Rate / Mile</label>
+            <div class="input-wrap"><span class="prefix">$</span><input type="number" id="rentalMileRate" placeholder="0.00" oninput="calc()" /></div>
+          </div>
+        </div>
+        <div class="subtotal" id="rentalSub">Rental cost: <span id="rentalVal"></span></div>
+      </div>
+    </div>
+
+    <!-- Per Diem -->
+    <div class="section">
+      <div class="section-header"><span>💼</span><span>Per Diem</span></div>
+      <div class="section-body">
+        <div class="row">
+          <div class="field">
+            <label>People</label>
+            <div class="input-wrap"><input type="number" id="foodPeople" placeholder="1" oninput="calc()" /></div>
+          </div>
+          <div class="field">
+            <label>Days</label>
+            <div class="input-wrap"><input type="number" id="foodDays" placeholder="1" oninput="calc()" /></div>
+          </div>
+        </div>
+        <div class="subtotal" id="foodSub">$25/person/day — Total: <span id="foodVal"></span></div>
+      </div>
+    </div>
+
+    <!-- Out of State Moving -->
+    <div class="section">
+      <div class="section-header"><span>📦</span><span>Out of State Moving Service</span></div>
+      <div class="section-body">
+        <div class="field">
+          <label>Total Cost</label>
+          <div class="input-wrap"><span class="prefix">$</span><input type="number" id="movingCost" placeholder="0.00" oninput="calc()" /></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Company Moving Service -->
+    <div class="section">
+      <div class="section-header"><span>🏢</span><span>Company Moving Service</span></div>
+      <div class="section-body">
+        <div class="row-3">
+          <div class="field">
+            <label>Cost / Person</label>
+            <div class="input-wrap"><span class="prefix">$</span><input type="number" id="companyCost" placeholder="0.00" oninput="calc()" /></div>
+          </div>
+          <div class="field">
+            <label>People</label>
+            <div class="input-wrap"><input type="number" id="companyPeople" placeholder="1" oninput="calc()" /></div>
+          </div>
+          <div class="field">
+            <label>Days</label>
+            <div class="input-wrap"><input type="number" id="companyDays" placeholder="1" oninput="calc()" /></div>
+          </div>
+        </div>
+        <div class="subtotal" id="companySub">Company cost: <span id="companyVal"></span></div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary">
+      <div class="summary-title">Summary</div>
+      <div id="emptyMsg" class="empty-summary">Fill in costs above to see totals</div>
+      <div id="summaryContent" style="display:none">
+        <div class="breakdown" id="breakdownRows"></div>
+        <div class="divider"></div>
+        <div class="total-row">
+          <div class="total-label">Total Trip Cost</div>
+          <div class="total-value" id="totalVal"></div>
+        </div>
+        <div class="estimate-section">
+          <div class="estimate-row">
+            <div class="estimate-label">Rough Estimate (2x)</div>
+            <div class="estimate-value" id="doubledVal"></div>
+          </div>
+          <div class="estimate-sub">Trip cost × 2 as a buffer estimate</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const fmt = (v) => v.toLocaleString("en-US", { style: "currency", currency: "USD" });
+    const g = (id) => parseFloat(document.getElementById(id).value) || 0;
+    const el = (id) => document.getElementById(id);
+
+    function showSub(subId, valId, value) {
+      if (value > 0) {
+        el(subId).style.display = "block";
+        el(valId).textContent = fmt(value);
+      } else {
+        el(subId).style.display = "none";
+      }
+    }
+
+    function calc() {
+      const miles = g("miles"), mpg = g("mpg"), gasPrice = g("gasPrice");
+      const fuelCost = mpg > 0 ? (miles / mpg) * gasPrice : 0;
+
+      const hotelNights = g("hotelNights"), hotelRate = g("hotelRate");
+      const hotelPeople = Math.max(g("hotelPeople"), 1);
+      const hotelCost = hotelNights * hotelRate * hotelPeople;
+
+      const flightCost = g("flightCost");
+      const flightPeople = Math.max(g("flightPeople"), 1);
+      const totalFlightCost = flightCost * flightPeople;
+
+      const rentalDays = g("rentalDays"), rentalRate = g("rentalRate");
+      const rentalMiles = g("rentalMiles"), rentalMileRate = g("rentalMileRate");
+      const rentalCost = (rentalDays * rentalRate) + (rentalMiles * rentalMileRate);
+
+      const foodPeople = Math.max(g("foodPeople"), 1);
+      const foodDays = Math.max(g("foodDays"), 1);
+      const foodCost = (document.getElementById("foodPeople").value || document.getElementById("foodDays").value)
+        ? foodPeople * foodDays * 25 : 0;
+
+      const movingCost = g("movingCost");
+
+      const companyCost = g("companyCost");
+      const companyPeople = Math.max(g("companyPeople"), 1);
+      const companyDays = Math.max(g("companyDays"), 1);
+      const totalCompanyCost = companyCost > 0 ? companyCost * companyPeople * companyDays : 0;
+
+      const totalTrip = fuelCost + hotelCost + totalFlightCost + rentalCost + foodCost + movingCost + totalCompanyCost;
+      const doubledTrip = totalTrip * 2;
+
+      // Subtotals
+      showSub("fuelSub", "fuelVal", fuelCost);
+      showSub("hotelSub", "hotelVal", hotelCost);
+      showSub("flightSub", "flightVal", totalFlightCost);
+      showSub("rentalSub", "rentalVal", rentalCost);
+      showSub("foodSub", "foodVal", foodCost);
+      showSub("companySub", "companyVal", totalCompanyCost);
+
+      // Summary
+      if (totalTrip === 0) {
+        el("emptyMsg").style.display = "block";
+        el("summaryContent").style.display = "none";
+        return;
+      }
+
+      el("emptyMsg").style.display = "none";
+      el("summaryContent").style.display = "block";
+
+      const items = [
+        { label: "Fuel", value: fuelCost },
+        { label: "Hotel", value: hotelCost },
+        { label: "Flights", value: totalFlightCost },
+        { label: "Vehicle Rental", value: rentalCost },
+        { label: "Per Diem", value: foodCost },
+        { label: "Out of State Moving", value: movingCost },
+        { label: "Company Moving Service", value: totalCompanyCost },
+      ].filter(b => b.value > 0);
+
+      el("breakdownRows").innerHTML = items.map(b =>
+        `<div class="breakdown-row"><span>${b.label}</span><span>${fmt(b.value)}</span></div>`
+      ).join("");
+
+      el("totalVal").textContent = fmt(totalTrip);
+      el("doubledVal").textContent = fmt(doubledTrip);
+    }
+  </script>
+</body>
+</html>
